@@ -24,7 +24,7 @@ var _ = Describe("EndToEnd", func() {
 		ii.Stop()
 	})
 
-	Describe("Two Fabric Networks with Weaver Relay Life Cycle", func() {
+	Describe("Two Fabric Networks with Cacti Weaver Relay Life Cycle", func() {
 
 		var testdataPath = "./testdata"
 

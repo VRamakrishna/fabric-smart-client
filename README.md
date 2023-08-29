@@ -98,7 +98,7 @@ If you are a skilled software engineer, you will be able to leverage the full po
 But, this is not all. The Fabric Smart Client is a client-side component that can be used to develop applications:
 
 - Based on other backends like [`Orion`](https://github.com/hyperledger-labs/orion-server).
-- With interoperability using the [`Weaver`](https://github.com/hyperledger-labs/weaver-dlt-interoperability) framework.
+- With interoperability using the [`Cacti Weaver`](https://github.com/hyperledger/cacti/weaver) framework.
 - With TEE support as offered by [`Fabric Private Chaincode`](https://github.com/hyperledger/fabric-private-chaincode).
 - And more...
 

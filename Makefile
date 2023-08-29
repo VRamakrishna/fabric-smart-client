@@ -2,6 +2,7 @@
 FABRIC_VERSION ?= 2.5.0
 FABRIC_TWO_DIGIT_VERSION = $(shell echo $(FABRIC_VERSION) | cut -d '.' -f 1,2)
 ORION_VERSION=v0.2.5
+CACTI_VERSION=2.0.0-alpha.1
 
 # need to install fabric binaries outside of fsc tree for now (due to chaincode packaging issues)
 FABRIC_BINARY_BASE=$(PWD)/../fabric
@@ -49,7 +50,7 @@ unit-tests-race:
 	cd integration/nwo/; export FAB_BINS=$(FAB_BINS); go test -cover ./...
 
 .PHONY: docker-images
-docker-images: fabric-docker-images weaver-docker-images fpc-docker-images orion-server-images monitoring-docker-images
+docker-images: fabric-docker-images cacti-weaver-docker-images fpc-docker-images orion-server-images monitoring-docker-images
 
 .PHONY: fabric-docker-images
 fabric-docker-images:
@@ -58,12 +59,12 @@ fabric-docker-images:
 	docker pull hyperledger/fabric-ccenv:$(FABRIC_TWO_DIGIT_VERSION)
 	docker image tag hyperledger/fabric-ccenv:$(FABRIC_TWO_DIGIT_VERSION) hyperledger/fabric-ccenv:latest
 
-.PHONY: weaver-docker-images
-weaver-docker-images:
-	docker pull ghcr.io/hyperledger-labs/weaver-fabric-driver:1.2.1
-	docker image tag ghcr.io/hyperledger-labs/weaver-fabric-driver:1.2.1 hyperledger-labs/weaver-fabric-driver:latest
-	docker pull ghcr.io/hyperledger-labs/weaver-relay-server:1.2.1
-	docker image tag ghcr.io/hyperledger-labs/weaver-relay-server:1.2.1 hyperledger-labs/weaver-relay-server:latest
+.PHONY: cacti-weaver-docker-images
+cacti-weaver-docker-images:
+	docker pull ghcr.io/hyperledger/cacti/cacti-weaver-fabric-driver:$(CACTI_VERSION)
+	docker image tag ghcr.io/hyperledger/cacti/cacti-weaver-fabric-driver:$(CACTI_VERSION) hyperledger/cacti/cacti-weaver-fabric-driver:latest
+	docker pull ghcr.io/hyperledger/cacti/cacti-weaver-relay-server:$(CACTI_VERSION)
+	docker image tag ghcr.io/hyperledger/cacti/cacti-weaver-relay-server:$(CACTI_VERSION) hyperledger/cacti/cacti-weaver-relay-server:latest
 
 .PHONY: fpc-docker-images
 fpc-docker-images:
@@ -132,8 +133,8 @@ integration-tests-twonets:
 integration-tests-fpc-echo:
 	cd ./integration/fabric/fpc/echo; export FAB_BINS=$(FAB_BINS); ginkgo $(GINKGO_TEST_OPTS) .
 
-.PHONY: integration-tests-weaver-relay
-integration-tests-weaver-relay:
+.PHONY: integration-tests-cacti-weaver-relay
+integration-tests-cacti-weaver-relay:
 	cd ./integration/fabric/weaver/relay; export FAB_BINS=$(FAB_BINS); ginkgo $(GINKGO_TEST_OPTS) .
 
 .PHONY: integration-tests-fabric-stoprestart

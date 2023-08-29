@@ -32,8 +32,8 @@ import (
 )
 
 const (
-	RelayServerImage  = "hyperledger-labs/weaver-relay-server:latest"
-	FabricDriverImage = "hyperledger-labs/weaver-fabric-driver:latest"
+	RelayServerImage  = "hyperledger/cacti-weaver-relay-server:latest"
+	FabricDriverImage = "hyperledger/cacti-weaver-fabric-driver:latest"
 	// FabricDriverImage = "fabric-driver:latest"
 )
 

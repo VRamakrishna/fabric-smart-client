@@ -12,8 +12,8 @@ import (
 
 	"github.com/hyperledger-labs/fabric-smart-client/pkg/utils/proto"
 	"github.com/hyperledger-labs/fabric-smart-client/platform/fabric"
-	"github.com/hyperledger-labs/weaver-dlt-interoperability/common/protos-go/common"
-	fabric2 "github.com/hyperledger-labs/weaver-dlt-interoperability/common/protos-go/fabric"
+	"github.com/hyperledger/cacti/weaver/common/protos-go/common"
+	fabric2 "github.com/hyperledger/cacti/weaver/common/protos-go/fabric"
 	"github.com/hyperledger/fabric/protoutil"
 	"github.com/pkg/errors"
 )

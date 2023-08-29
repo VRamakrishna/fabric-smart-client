@@ -17,7 +17,7 @@ import (
 
 func TestEndToEnd(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Two Fabric Networks Suite with Weaver Relay")
+	RunSpecs(t, "Two Fabric Networks Suite with Cacti Weaver Relay")
 }
 
 func StartPort() int {

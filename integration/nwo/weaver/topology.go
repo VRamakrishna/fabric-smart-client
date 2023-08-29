@@ -92,7 +92,7 @@ func (t *Topology) AddRelayServer(ft *topology.Topology, org string) *RelayServe
 			Label:     "interop",
 			Channel:   ft.Channels[0].Name,
 			Namespace: "interop",
-			Path:      "github.com/hyperledger-labs/weaver-dlt-interoperability/core/network/fabric-interop-cc/contracts/interop",
+			Path:      "github.com/hyperledger/cacti/weaver/core/network/fabric-interop-cc/contracts/interop",
 		},
 	}
 	t.Relays = append(t.Relays, r)

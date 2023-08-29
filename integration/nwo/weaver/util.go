@@ -20,11 +20,11 @@ import (
 )
 
 const (
-	interopCCPath = `https://github.com/hyperledger-labs/weaver-dlt-interoperability/archive/refs/tags/core/network/fabric-interop-cc/contracts/interop/v1.2.2.zip`
+	interopCCPath = `https://github.com/hyperledger/cacti/weaver/archive/refs/tags/core/network/fabric-interop-cc/contracts/interop/v2.0.0-alpha.1.zip`
 )
 
 func packageChaincode() (tmpDir string, cleanup func(), err error) {
-	metadataContent := `{"path":"github.com/hyperledger-labs/weaver-dlt-interoperability/core/network/fabric-interop-cc/contracts/interop","type":"golang","label":"interop"}`
+	metadataContent := `{"path":"github.com/hyperledger/cacti/weaver/core/network/fabric-interop-cc/contracts/interop","type":"golang","label":"interop"}`
 	_ = metadataContent
 	resp, err := http.Get(interopCCPath)
 	if err != nil {
