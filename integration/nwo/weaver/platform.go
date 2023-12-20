@@ -33,13 +33,14 @@ import (
 
 const (
 	RelayServerImage  = "hyperledger/cacti-weaver-relay-server:latest"
-	FabricDriverImage = "hyperledger/cacti-weaver-fabric-driver:latest"
-	// FabricDriverImage = "fabric-driver:latest"
+	FabricDriverImage = "hyperledger/cacti-weaver-driver-fabric:latest"
+	IINAgentImage = "hyperledger/cacti-weaver-iin-agent:latest"
 )
 
 var RequiredImages = []string{
 	RelayServerImage,
 	FabricDriverImage,
+	IINAgentImage,
 }
 
 type Builder interface {
@@ -110,6 +111,9 @@ func (p *Platform) GenerateConfigTree() {
 			driver.Port = p.Context.ReservePort()
 		}
 	}
+	for _, iinAgent := range p.Topology.IINAgents {
+		iinAgent.Port = p.Context.ReservePort()
+	}
 }
 
 func (p *Platform) GenerateArtifacts() {
@@ -117,6 +121,9 @@ func (p *Platform) GenerateArtifacts() {
 		p.generateRelayServerTOML(relay)
 		p.generateFabricDriverConfigFiles(relay)
 		p.generateInteropChaincodeConfigFiles(relay)
+	}
+	for _, iinAgent := range p.Topology.IINAgents {
+		p.generateIINAgentConfigFiles(iinAgent)
 	}
 	p.generateFabricExtension()
 	p.copyInteropChaincode()
@@ -269,6 +276,48 @@ func (p *Platform) FabricDriverWalletId(relay *RelayServer, id string) string {
 	)
 }
 
+func (p *Platform) IINAgentDir(iinAgent *IINAgent) string {
+	return filepath.Join(
+		p.Context.RootDir(),
+		"weaver",
+		"iin-agent",
+		iinAgent.Network,
+		iinAgent.Organization,
+	)
+}
+
+func (p *Platform) IINAgentConnectionProfilePath(iinAgent *IINAgent) string {
+	return filepath.Join(
+		p.IINAgentDir(iinAgent),
+		"cp.json",
+	)
+}
+
+func (p *Platform) IINAgentConfigPath(iinAgent *IINAgent) string {
+	return filepath.Join(
+		p.IINAgentDir(iinAgent),
+		"config.json",
+	)
+}
+
+func (p *Platform) IINAgentWalletDir(iinAgent *IINAgent) string {
+	return filepath.Join(
+		p.Context.RootDir(),
+		"weaver",
+		"iin-agent",
+		iinAgent.Network,
+		iinAgent.Organization,
+		"wallet-"+iinAgent.Network+"-"+iinAgent.Organization,
+	)
+}
+
+func (p *Platform) IINAgentWalletId(iinAgent *IINAgent, id string) string {
+	return filepath.Join(
+		p.IINAgentWalletDir(iinAgent),
+		id+".id",
+	)
+}
+
 func (p *Platform) RelayServerInteropDir(relay *RelayServer) string {
 	return filepath.Join(
 		p.Context.RootDir(),
@@ -311,6 +360,10 @@ func (p *Platform) RelayDir() string {
 
 func (p *Platform) Fabric(relay *RelayServer) FabricNetwork {
 	return p.Context.PlatformByName(relay.FabricTopologyName).(FabricNetwork)
+}
+
+func (p *Platform) FabricByNetwork(network string) FabricNetwork {
+	return p.Context.PlatformByName(network).(FabricNetwork)
 }
 
 func (p *Platform) generateRelayServerTOML(relay *RelayServer) {
@@ -557,6 +610,135 @@ func (p *Platform) generateInteropChaincodeVerificationPolicyFile(destinationRel
 	Expect(err).NotTo(HaveOccurred())
 	Expect(os.MkdirAll(p.RelayServerInteropDir(destinationRelay), 0o755)).NotTo(HaveOccurred())
 	Expect(os.WriteFile(p.RelayServerInteropVerificationPolicy(destinationRelay), raw, 0o755)).NotTo(HaveOccurred())
+}
+
+func (p *Platform) generateIINAgentCPFile(iinAgent *IINAgent) {
+	cp := p.FabricByNetwork(iinAgent.Network).ConnectionProfile(iinAgent.Network, true)
+	cp.Client = network.Client{
+		Organization: iinAgent.Organization,
+		Connection: network.Connection{
+			Timeout: network.Timeout{
+				Peer: map[string]string{
+					"endorser": "300",
+				},
+			},
+		},
+	}
+
+	raw, err := json.MarshalIndent(cp, "", "  ")
+	Expect(err).NotTo(HaveOccurred())
+
+	Expect(os.MkdirAll(p.IINAgentDir(iinAgent), 0o755)).NotTo(HaveOccurred())
+	Expect(os.WriteFile(p.IINAgentConnectionProfilePath(iinAgent), raw, 0o755)).NotTo(HaveOccurred())
+}
+
+func (p *Platform) generateIINAgentConfigFile(iinAgent *IINAgent) {
+	fabric := p.FabricByNetwork(iinAgent.Network)
+	iinAgentUser := fabric.UserByOrg(iinAgent.Organization, "IINAgent")
+	iinAgentAdmin := fabric.UserByOrg(iinAgent.Organization, "IINAgentAdmin")
+	var ordererMspList []string		// list of MSPs of orderer organizations
+	for _, ordererOrg := range fabric.Orderers() {
+		ordererMspList = append(ordererMspList, fabric.OrgMSPID(ordererOrg.Name))
+	}
+	config := &IINConfig{
+		Admin: Admin{
+			Name:   iinAgentAdmin.Name,
+			Secret: "adminpw",
+		},
+		Relay: Relay{
+			Name:        iinAgentUser.Name,
+			Affiliation: "",
+			Role:        "client",
+			Attrs: []Attr{
+				{
+					Name:  "iin-agent",
+					Value: "true",
+					Ecert: true,
+				},
+			},
+		},
+		MspId: fabric.OrgMSPID(iinAgent.Organization),
+		OrdererMspIds: ordererMspList,
+		Local: false,
+		CaUrl: "",
+	}
+	raw, err := json.MarshalIndent(config, "", "  ")
+	Expect(err).NotTo(HaveOccurred())
+	Expect(os.MkdirAll(p.IINAgentDir(iinAgent), 0o755)).NotTo(HaveOccurred())
+	Expect(os.WriteFile(p.IINAgentConfigPath(iinAgent), raw, 0o755)).NotTo(HaveOccurred())
+}
+
+func (p *Platform) generateIINAgentWallet(iinAgent *IINAgent) {
+	fabric := p.FabricByNetwork(iinAgent.Network)
+
+	// User
+	iinAgentUser := fabric.UserByOrg(iinAgent.Organization, "IINAgent")
+	cert, err := os.ReadFile(iinAgentUser.Cert)
+	Expect(err).NotTo(HaveOccurred())
+	key, err := os.ReadFile(iinAgentUser.Key)
+	Expect(err).NotTo(HaveOccurred())
+
+	identity := &Identity{
+		Credentials: Credentials{
+			Certificate: string(cert),
+			PrivateKey:  string(key),
+		},
+		MspId:   fabric.OrgMSPID(iinAgent.Organization),
+		Type:    "X.509",
+		Version: 1,
+	}
+	raw, err := json.MarshalIndent(identity, "", "  ")
+	Expect(err).NotTo(HaveOccurred())
+	Expect(os.MkdirAll(p.IINAgentWalletDir(iinAgent), 0o755)).NotTo(HaveOccurred())
+	Expect(os.WriteFile(p.IINAgentWalletId(iinAgent, iinAgentUser.Name), raw, 0o755)).NotTo(HaveOccurred())
+
+	// User - org admin
+	networkAdminUser := fabric.UserByOrg(iinAgent.Organization, "NetworkAdmin")
+	cert, err = os.ReadFile(networkAdminUser.Cert)
+	Expect(err).NotTo(HaveOccurred())
+	key, err = os.ReadFile(networkAdminUser.Key)
+	Expect(err).NotTo(HaveOccurred())
+
+	identity = &Identity{
+		Credentials: Credentials{
+			Certificate: string(cert),
+			PrivateKey:  string(key),
+		},
+		MspId:   fabric.OrgMSPID(iinAgent.Organization),
+		Type:    "X.509",
+		Version: 1,
+	}
+	raw, err = json.MarshalIndent(identity, "", "  ")
+	Expect(err).NotTo(HaveOccurred())
+	Expect(os.MkdirAll(p.IINAgentWalletDir(iinAgent), 0o755)).NotTo(HaveOccurred())
+	Expect(os.WriteFile(p.IINAgentWalletId(iinAgent, networkAdminUser.Name), raw, 0o755)).NotTo(HaveOccurred())
+
+	// Admin
+	iinAgentAdmin := fabric.UserByOrg(iinAgent.Organization, "IINAgentAdmin")
+	cert, err = os.ReadFile(iinAgentAdmin.Cert)
+	Expect(err).NotTo(HaveOccurred())
+	key, err = os.ReadFile(iinAgentAdmin.Key)
+	Expect(err).NotTo(HaveOccurred())
+
+	identity = &Identity{
+		Credentials: Credentials{
+			Certificate: string(cert),
+			PrivateKey:  string(key),
+		},
+		MspId:   fabric.OrgMSPID(iinAgent.Organization),
+		Type:    "X.509",
+		Version: 1,
+	}
+	raw, err = json.MarshalIndent(identity, "", "  ")
+	Expect(err).NotTo(HaveOccurred())
+	Expect(os.MkdirAll(p.IINAgentWalletDir(iinAgent), 0o755)).NotTo(HaveOccurred())
+	Expect(os.WriteFile(p.IINAgentWalletId(iinAgent, iinAgentAdmin.Name), raw, 0o755)).NotTo(HaveOccurred())
+}
+
+func (p *Platform) generateIINAgentConfigFiles(iinAgent *IINAgent) {
+	p.generateIINAgentCPFile(iinAgent)
+	p.generateIINAgentConfigFile(iinAgent)
+	p.generateIINAgentWallet(iinAgent)
 }
 
 func (p *Platform) generateFabricExtension() {

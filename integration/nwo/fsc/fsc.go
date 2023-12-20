@@ -337,7 +337,7 @@ func (p *Platform) CheckTopology() {
 
 	for _, organization := range p.Organizations {
 		organization.Users += users[organization.Name]
-		organization.UserNames = append(userNames[organization.Name], "User1", "User2")
+		organization.UserNames = append(userNames[organization.Name], "User1", "User2", "NetworkAdmin")
 	}
 
 	if !bootstrapNodeFound {

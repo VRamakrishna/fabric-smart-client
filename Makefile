@@ -2,7 +2,7 @@
 FABRIC_VERSION ?= 2.5.0
 FABRIC_TWO_DIGIT_VERSION = $(shell echo $(FABRIC_VERSION) | cut -d '.' -f 1,2)
 ORION_VERSION=v0.2.5
-CACTI_VERSION=2.0.0-alpha.1
+CACTI_VERSION=2.0.0-alpha.2
 
 # need to install fabric binaries outside of fsc tree for now (due to chaincode packaging issues)
 FABRIC_BINARY_BASE=$(PWD)/../fabric
@@ -61,10 +61,12 @@ fabric-docker-images:
 
 .PHONY: cacti-weaver-docker-images
 cacti-weaver-docker-images:
-	docker pull ghcr.io/hyperledger/cacti/cacti-weaver-fabric-driver:$(CACTI_VERSION)
-	docker image tag ghcr.io/hyperledger/cacti/cacti-weaver-fabric-driver:$(CACTI_VERSION) hyperledger/cacti/cacti-weaver-fabric-driver:latest
-	docker pull ghcr.io/hyperledger/cacti/cacti-weaver-relay-server:$(CACTI_VERSION)
-	docker image tag ghcr.io/hyperledger/cacti/cacti-weaver-relay-server:$(CACTI_VERSION) hyperledger/cacti/cacti-weaver-relay-server:latest
+	docker pull ghcr.io/hyperledger/cacti-weaver-driver-fabric:$(CACTI_VERSION)
+	docker image tag ghcr.io/hyperledger/cacti-weaver-driver-fabric:$(CACTI_VERSION) hyperledger/cacti-weaver-driver-fabric:latest
+	docker pull ghcr.io/hyperledger/cacti-weaver-relay-server:$(CACTI_VERSION)
+	docker image tag ghcr.io/hyperledger/cacti-weaver-relay-server:$(CACTI_VERSION) hyperledger/cacti-weaver-relay-server:latest
+	docker pull ghcr.io/hyperledger/cacti-weaver-iin-agent:$(CACTI_VERSION)
+	docker image tag ghcr.io/hyperledger/cacti-weaver-iin-agent:$(CACTI_VERSION) hyperledger/cacti-weaver-iin-agent:latest
 
 .PHONY: fpc-docker-images
 fpc-docker-images:

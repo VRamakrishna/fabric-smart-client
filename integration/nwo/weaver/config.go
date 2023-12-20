@@ -31,4 +31,13 @@ type (
 		MspId string `json:"mspId"`
 		CaUrl string `json:"caUrl"`
 	}
+
+	IINConfig struct {
+		Admin Admin            `json:"admin"`
+		Relay Relay            `json:"relay"`
+		MspId string           `json:"mspId"`
+		OrdererMspIds []string `json:"ordererMspIds"`
+		Local bool             `json:"local"`
+		CaUrl string           `json:"caUrl"`
+	}
 )

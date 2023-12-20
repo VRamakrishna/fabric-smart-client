@@ -12,8 +12,8 @@ import (
 
 	"github.com/hyperledger-labs/fabric-smart-client/pkg/utils/proto"
 	"github.com/hyperledger-labs/fabric-smart-client/platform/fabric"
-	"github.com/hyperledger/cacti/weaver/common/protos-go/common"
-	fabric2 "github.com/hyperledger/cacti/weaver/common/protos-go/fabric"
+	"github.com/hyperledger/cacti/weaver/common/protos-go/v2/common"
+	fabric2 "github.com/hyperledger/cacti/weaver/common/protos-go/v2/fabric"
 	"github.com/hyperledger/fabric/protoutil"
 	"github.com/pkg/errors"
 )
@@ -53,14 +53,14 @@ func NewProof(fns *fabric.NetworkService, ch *fabric.Channel, proof *ProofMessag
 		return nil, errors.Wrapf(err, "failed unmarshalling view's data")
 	}
 
-	respPayload, err := protoutil.UnmarshalChaincodeAction(fv.ProposalResponsePayload.Extension)
+	respPayload, err := protoutil.UnmarshalChaincodeAction(fv.EndorsedProposalResponses[0].Payload.Extension)
 	if err != nil {
 		err = fmt.Errorf("GetChaincodeAction error %s", err)
 		return nil, err
 	}
 
 	interopPayload := &common.InteropPayload{}
-	err = proto.Unmarshal(fv.Response.Payload, interopPayload)
+	err = proto.Unmarshal(fv.EndorsedProposalResponses[0].Payload.Extension, interopPayload)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal InteropPayload: %v", err)
 	}
@@ -94,7 +94,12 @@ func (p *Proof) Verify() error {
 
 // IsOK return true if the result is valid
 func (p *Proof) IsOK() bool {
-	return p.fv.Response.Status == OK
+	respPayload, err := protoutil.UnmarshalChaincodeAction(p.fv.EndorsedProposalResponses[0].Payload.Extension)
+	if err != nil {
+		logger.Errorf("GetChaincodeAction error %s", err)
+		return false
+	}
+	return respPayload.Response.Status == OK
 }
 
 // Result returns the response payload

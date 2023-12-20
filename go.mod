@@ -20,14 +20,14 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/hyperledger-labs/orion-sdk-go v0.2.5
 	github.com/hyperledger-labs/orion-server v0.2.5
-	github.com/hyperledger/cacti/weaver/common/protos-go/v2 v2.0.0-alpha.1
-	github.com/VRamakrishna/cacti/weaver/sdks/fabric/go-sdk/v2 v2.0.0-alpha.1
+	github.com/hyperledger/cacti/weaver/common/protos-go/v2 v2.0.0-alpha.2
+	github.com/hyperledger/cacti/weaver/sdks/fabric/go-sdk/v2 v2.0.0-alpha.2
 	github.com/hyperledger/fabric v1.4.0-rc1.0.20230401164317-bd8e24856939
 	github.com/hyperledger/fabric-chaincode-go v0.0.0-20220920210243-7bc6fa0dd58b
 	github.com/hyperledger/fabric-contract-api-go v1.1.1
 	github.com/hyperledger/fabric-lib-go v1.0.0
 	github.com/hyperledger/fabric-private-chaincode v0.0.0-20210907122433-d56466264e4d
-	github.com/hyperledger/fabric-protos-go v0.2.0
+	github.com/hyperledger/fabric-protos-go v0.3.0
 	github.com/libp2p/go-libp2p v0.27.8
 	github.com/libp2p/go-libp2p-kad-dht v0.22.0
 	github.com/miekg/pkcs11 v1.1.1
@@ -52,7 +52,7 @@ require (
 	go.uber.org/zap v1.24.0
 	golang.org/x/net v0.8.0
 	golang.org/x/sync v0.1.0
-	google.golang.org/grpc v1.53.0
+	google.golang.org/grpc v1.54.0
 	google.golang.org/protobuf v1.30.0
 	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/yaml.v2 v2.4.0

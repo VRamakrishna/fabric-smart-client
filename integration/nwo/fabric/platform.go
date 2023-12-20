@@ -391,7 +391,7 @@ func (p *Platform) Channels() []*fabric.Channel {
 	return channels
 }
 
-func (p *Platform) InvokeChaincode(cc *topology.ChannelChaincode, method string, args ...[]byte) []byte {
+func (p *Platform) InvokeChaincode(cc *topology.ChannelChaincode, user, method string, args ...[]byte) []byte {
 	if cc.Private {
 		c := contract.GetContract(
 			&fpc.ChannelProvider{Network: p.Network, CC: cc},
@@ -415,6 +415,7 @@ func (p *Platform) InvokeChaincode(cc *topology.ChannelChaincode, method string,
 	ctor, err := json.Marshal(s)
 	Expect(err).NotTo(HaveOccurred())
 
+	// TODO: RAMA: Fix the username based on the passed parameter and fix the calls to this function
 	sess, err := p.Network.PeerUserSession(peer, "User1", commands.ChaincodeInvoke{
 		ChannelID: cc.Channel,
 		Orderer:   p.Network.OrdererAddress(orderer, network.ListenPort),

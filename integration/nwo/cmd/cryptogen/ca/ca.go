@@ -221,19 +221,25 @@ func (ca *CA) SignCertificate(baseDir, name string, orgUnits, alternateNames []s
 	if nodeType == CLIENT {
 		hfType = "client"
 	}
-	// TODO: remove this by introducing custom attributes
-	relay := "false"
+	attrMap := map[string]string{
+		"hf.Affiliation":  ca.OrganizationalUnit,
+		"hf.EnrollmentID": name,
+		"hf.Type":         hfType,
+		"relay":           relay,
+	}
+	// TODO: remove these by introducing custom attributes
+	// Note: Cacti-Weaver logic just depends on particular attributes
+	//       being present, and not on their values
 	if strings.Contains(strings.ToLower(name), "relay") {
-		relay = "true"
+		attrMap["relay"] = "true"
 	}
-	attrs := &Attributes{
-		map[string]string{
-			"hf.Affiliation":  ca.OrganizationalUnit,
-			"hf.EnrollmentID": name,
-			"hf.Type":         hfType,
-			"relay":           relay,
-		},
+	if strings.Contains(strings.ToLower(name), "iinagent") {
+		attrMap["iin-agent"] = "true"
 	}
+	if strings.Contains(strings.ToLower(name), "networkadmin") {
+		attrMap["network-admin"] = "true"
+	}
+	attrs := &Attributes{ attrMap }
 	buf, err := json.Marshal(attrs)
 	if err != nil {
 		return nil, errors.Wrap(err, "Failed to marshal attributes")

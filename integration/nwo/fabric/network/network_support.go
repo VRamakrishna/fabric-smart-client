@@ -901,7 +901,7 @@ func (n *Network) Discover(command common.Command) (*gexec.Session, error) {
 // can be used to start and manage an orderer process.
 func (n *Network) OrdererRunner(o *topology.Orderer) *runner2.Runner {
 	cmdPath := findCmdAtEnv(ordererCMD)
-	Expect(cmdPath).NotTo(Equal(""), "could not find %s in %s directory %s", configtxgenCMD, FabricBinsPathEnvKey, os.Getenv(FabricBinsPathEnvKey))
+	Expect(cmdPath).NotTo(Equal(""), "could not find %s in %s directory %s", ordererCMD, FabricBinsPathEnvKey, os.Getenv(FabricBinsPathEnvKey))
 
 	cmd := exec.Command(cmdPath)
 	cmd.Env = os.Environ()

@@ -17,10 +17,10 @@ import (
 	"github.com/hyperledger-labs/fabric-smart-client/platform/fabric"
 	"github.com/hyperledger-labs/fabric-smart-client/platform/view/services/assert"
 	"github.com/hyperledger-labs/fabric-smart-client/platform/view/services/flogging"
-	"github.com/hyperledger/cacti/weaver/common/protos-go/common"
-	fabric2 "github.com/hyperledger/cacti/weaver/common/protos-go/fabric"
-	"github.com/VRamakrishna/cacti/weaver/sdks/fabric/go-sdk/interoperablehelper"
-	"github.com/VRamakrishna/cacti/weaver/sdks/fabric/go-sdk/types"
+	"github.com/hyperledger/cacti/weaver/common/protos-go/v2/common"
+	fabric2 "github.com/hyperledger/cacti/weaver/common/protos-go/v2/fabric"
+	"github.com/hyperledger/cacti/weaver/sdks/fabric/go-sdk/v2/interoperablehelper"
+	"github.com/hyperledger/cacti/weaver/sdks/fabric/go-sdk/v2/types"
 	"github.com/hyperledger/fabric-protos-go/msp"
 	"github.com/hyperledger/fabric/protoutil"
 	"github.com/pkg/errors"
@@ -57,14 +57,14 @@ func NewResult(address string, view *common.View) (*Result, error) {
 	}
 
 	// TODO: check consistency with the requested query
-	respPayload, err := protoutil.UnmarshalChaincodeAction(fv.ProposalResponsePayload.Extension)
+	respPayload, err := protoutil.UnmarshalChaincodeAction(fv.EndorsedProposalResponses[0].Payload.Extension)
 	if err != nil {
 		err = fmt.Errorf("GetChaincodeAction error %s", err)
 		return nil, err
 	}
 
 	interopPayload := &common.InteropPayload{}
-	err = proto.Unmarshal(fv.Response.Payload, interopPayload)
+	err = proto.Unmarshal(fv.EndorsedProposalResponses[0].Payload.Extension, interopPayload)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal InteropPayload: %v", err)
 	}
@@ -80,7 +80,12 @@ func NewResult(address string, view *common.View) (*Result, error) {
 
 // IsOK return true if the result is valid
 func (r *Result) IsOK() bool {
-	return r.fv.Response.Status == OK
+	respPayload, err := protoutil.UnmarshalChaincodeAction(r.fv.EndorsedProposalResponses[0].Payload.Extension)
+	if err != nil {
+		logger.Errorf("GetChaincodeAction error %s", err)
+		return false
+	}
+	return respPayload.Response.Status == OK
 }
 
 // Result returns the response payload
@@ -203,6 +208,7 @@ func (q *Query) Call() (*Result, error) {
 		signer,
 		string(sID.IdBytes),
 		true,
+		false,
 	)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed running interop view")
