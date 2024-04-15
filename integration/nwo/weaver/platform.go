@@ -173,6 +173,8 @@ func (p *Platform) PostRun(bool) {
 			Expect(err).NotTo(HaveOccurred())
 			destinationFabric.InvokeChaincode(cc, "CreateVerificationPolicy", raw)
 
+			// TODO: RAMA - Replace the lines below with a call to `CreateLocalMembership`
+			//              from `"github.com/hyperledger/cacti/weaver/sdks/fabric/go-sdk/v2/membershipmanager`.
 			raw, err = os.ReadFile(p.RelayServerInteropMembership(sourceRelay))
 			Expect(err).NotTo(HaveOccurred())
 			destinationFabric.InvokeChaincode(cc, "CreateMembership", raw)
@@ -212,7 +214,9 @@ func (p *Platform) Cleanup() {
 
 	// remove all weaver related containers
 	err = d.Cleanup(p.NetworkID, func(name string) bool {
-		return strings.HasPrefix(name, "/driver") || strings.HasPrefix(name, "/relay")
+		return strings.HasPrefix(name, "/cacti-weaver-driver") ||
+			strings.HasPrefix(name, "/cacti-weaver-relay") ||
+			strings.HasPrefix(name, "/cacti-weaver-iin-agent")
 	})
 	Expect(err).NotTo(HaveOccurred())
 }
