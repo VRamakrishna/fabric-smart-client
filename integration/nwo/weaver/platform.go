@@ -561,6 +561,7 @@ func (p *Platform) generateInteropChaincodeAccessControlFile(destinationRelay *R
 	}
 }
 
+// TODO: RAMA - Update this code to generate and write the local membership structure to file
 func (p *Platform) generateInteropChaincodeMembershipFile(relay *RelayServer) {
 	fabric := p.Fabric(relay)
 

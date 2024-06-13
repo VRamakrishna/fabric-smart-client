@@ -161,6 +161,7 @@ func (p *Platform) PostRun(load bool) {
 			)
 			res := p.InvokeChaincode(
 				chaincode,
+				"User1",
 				invocation.FunctionName,
 				invocation.Args...,
 			)

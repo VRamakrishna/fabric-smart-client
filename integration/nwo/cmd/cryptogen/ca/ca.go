@@ -225,7 +225,7 @@ func (ca *CA) SignCertificate(baseDir, name string, orgUnits, alternateNames []s
 		"hf.Affiliation":  ca.OrganizationalUnit,
 		"hf.EnrollmentID": name,
 		"hf.Type":         hfType,
-		"relay":           relay,
+		"relay":           "false",
 	}
 	// TODO: remove these by introducing custom attributes
 	// Note: Cacti-Weaver logic just depends on particular attributes

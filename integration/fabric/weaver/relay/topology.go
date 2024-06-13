@@ -35,9 +35,9 @@ func Topology() []api.Topology {
 	// Define weaver relay server topology. One relay server per Fabric network
 	wTopology := weaver.NewTopology()
 	wTopology.AddRelayServer(f1Topology, "Org1").AddFabricNetwork(f2Topology)
-	wTopology.AddIINAgents(f1Topology, "Org1")
+	wTopology.AddIINAgents(f1Topology)
 	wTopology.AddRelayServer(f2Topology, "Org3").AddFabricNetwork(f1Topology)
-	wTopology.AddIINAgents(f2Topology, "Org3")
+	wTopology.AddIINAgents(f2Topology)
 
 	// Define an FSC topology with 2 FCS nodes.
 	fscTopology := fsc.NewTopology()
